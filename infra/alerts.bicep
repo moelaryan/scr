@@ -62,8 +62,15 @@ resource statusAlerts 'Microsoft.Insights/scheduledQueryRules@2023-03-15-preview
     criteria: {
       allOf: [
         {
-          query: 'union traces, exceptions | where message has "${s.token}" or outerMessage has "${s.token}"'
+          query: 'union traces, exceptions | where message has "${s.token}" or outerMessage has "${s.token}" | extend Detail = iff(isnotempty(message), message, outerMessage) | project Detail'
           timeAggregation: 'Count'
+          dimensions: [
+            {
+              name: 'Detail'
+              operator: 'Include'
+              values: [ '*' ]
+            }
+          ]
           operator: 'GreaterThan'
           threshold: 0
           failingPeriods: {
